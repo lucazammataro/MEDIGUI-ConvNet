@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[18]:
-
 
 '''
 
 MEDIGUI-ConvNet (Medical Imaging Convolutional Neural Network with Graphic User Interface)
-Luca Zammataro, 2024
-LunanFoldomics LLC
+Luca Zammataro, LunanFoldomics LLC, 2024
 
 '''
 
@@ -39,15 +36,10 @@ display(HTML("<style>.container { width:100% !important; }</style>"))
 tf.config.set_visible_devices([], 'GPU')
 
 
-# In[19]:
-
-
 # Definisci una funzione per calcolare il massimo all'interno di ciascun elenco
 def max_in_list(lst):
     return max(lst)
 
-
-# In[20]:
 
 
 def LoadImageArchive(path):
@@ -621,15 +613,6 @@ display(HBox([Image_ID_slider_widget, display_image_button]))
 display(HBox([output_text, output]))
 
 
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 

@@ -46,7 +46,7 @@ Import it in a Jupyter Notebook cell with:
 import medigui_convnet as medigui
 ```
 
-Please use the medigui_convnet.ipynb provided.
+You can use the medigui_convnet.ipynb provided if you need it.
 
 ## Datasets 
 The dataset used (ALZ.training.set) represents the low-resolution version of another dataset provided by Uraninjo https://www.kaggle.com/uraninjo (https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset). All the images were processed and reduced to 100 X 100 pixels. You can download these datasets in pickle format from our Kaggle page at the following link: https://www.kaggle.com/datasets/lucazammataro/augmented-alzheimer-mri-dataset-100x100-pixel

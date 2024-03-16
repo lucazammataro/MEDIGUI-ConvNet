@@ -40,16 +40,21 @@ source deactivate  # On macOS and Linux
 ## Run MEDIGUI-ConvNet
 
 The python script medigui_convnet.py contains all the MEDIGUI-ConvNet functions.
-Import it in a Jupyter Notebook cell with
+Import it in a Jupyter Notebook cell with:
 
 ```
 import medigui_convnet as medigui
 ```
 
-for running the program
+Please, use the medigui_convnet.ipynb provided.
 
 ## Datasets 
 The dataset used (ALZ.training.set) represents the low-resolution version of another dataset provided by Uraninjo https://www.kaggle.com/uraninjo (https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset). All the images were processed and reduced to 100 X 100 pixels. You can download these datasets in pickle format from our Kaggle page at the following link: https://www.kaggle.com/datasets/lucazammataro/augmented-alzheimer-mri-dataset-100x100-pixel
 
- 
+## Additional Files
+1) The file "classes.tsv" contains pathological classes associated with the labels. It is pivotal for displaying the results.
+2) Unzip and load the ALZ.training.set.2024-03-15_21-03-51.model.zip file in the application, for quickly experiencing the power of CNN classification.
+
+Enjoy!
+
 

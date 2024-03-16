@@ -65,51 +65,7 @@ def LoadImageArchive(path):
     return X, Y
 
 
-# In[21]:
 
-
-def LoadImageArchiveAndIntegrate(path):
-    
-    with open(path, 'rb') as handle:
-        CVX = pickle.load(handle)
-
-    # Applica la funzione alla colonna 'X' per ottenere il massimo in ogni lista
-    max_values = CVX['X'].apply(max_in_list)
-
-    # Trova il massimo tra tutti i valori ottenuti
-    max_value = max_values.max()
-
-    # Normalizza i valori della colonna 'X' dividendo ogni valore per il massimo trovato
-    CVX['X_normalized'] = CVX['X'].apply(lambda x: [val / max_value for val in x])
-
-    X = np.stack(CVX['X_normalized'])
-    y = np.int64(CVX['y'])    
-    Y = to_categorical(y, 5)
-
-    
-    # Genomic info integration for 100X100
-    
-    n = int(X.shape[1]/2)
-
-    for i in range(len(y)):
-        if y[i] == 0:
-            X[i][n]= 0.7
-        if y[i] == 1:
-            X[i][n]= 1.0
-        if y[i] == 2:
-            X[i][n]= 0.0
-        if y[i] == 3:
-            X[i][n]= 0.5
-        if y[i] == 4:
-            X[i][n]= 0.5
-    
-    
-    X = X.reshape((X.shape[0], np.int64(np.sqrt(X.shape[1])), np.int64(np.sqrt(X.shape[1]))))
-    
-    return X, Y
-
-
-# In[22]:
 
 
 def DisplayImage(X, Y, img_index, classes):
@@ -141,7 +97,7 @@ def DisplayImage(X, Y, img_index, classes):
     plt.show()
 
 
-# In[23]:
+
 
 
 def splitDataset(X, Y, test_size, random_state):
@@ -151,7 +107,7 @@ def splitDataset(X, Y, test_size, random_state):
     return X_train, X_test, Y_train, Y_test
 
 
-# In[24]:
+
 
 
 def defineModel(X, Y, l1, l2):
@@ -185,7 +141,7 @@ def defineModel(X, Y, l1, l2):
     return model
 
 
-# In[25]:
+
 
 
 def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
@@ -211,7 +167,7 @@ def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
     return model
 
 
-# In[26]:
+
 
 
 def testCNN(X, Y, model, classes, img_index):
@@ -257,14 +213,13 @@ def testCNN(X, Y, model, classes, img_index):
     plt.show()
 
 
-# In[27]:
 
 
 def saveModel(model_path):
     tf.keras.models.save_model(model, model_path)
 
 
-# In[28]:
+
 
 
 def loadModel(model_path):
@@ -272,7 +227,7 @@ def loadModel(model_path):
     return loaded_model
 
 
-# In[29]:
+
 
 
 output = Output()

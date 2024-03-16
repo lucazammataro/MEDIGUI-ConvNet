@@ -35,3 +35,12 @@ pip install tqdm==4.66.1
 # Deactivate the virtual environment
 conda deactivate  # On Windows
 source deactivate  # On macOS and Linux
+
+# Run MEDIGUI-ConvNet
+
+The python script medigui_convnet.py contains all the MEDIGUI-ConvNet functions.
+Import it in a Jupyter Notebook cell with
+
+import medigui_convnet as medigui
+
+for running the program

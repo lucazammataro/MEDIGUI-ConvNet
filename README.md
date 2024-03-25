@@ -42,7 +42,7 @@ source deactivate  # On macOS and Linux
 The python module medigui_convnet.py contains all the MEDIGUI-ConvNet functions and can be imported in a Jupyter Notebook cell typying:
 
 ```
-import medigui_convnet as medigui
+import medigui_convnet
 ```
 
 You can use the medigui_convnet.ipynb provided if you need it.

@@ -899,11 +899,7 @@ def runGUI():
     # Crea il widget HTML con la tabella
     about_table_widget = widgets.HTML(value=table_html)
 
-    # Includere i controlli in un unico Tab
-    tab_contents = ['Load Dataset', 'Model Training', 'Learning Plot', 'Model Testing', 'About']
-
-
-    # Includere i controlli in un unico Tab
+    # Include controls in a unique Tab
     tab_contents = ['Load Dataset', 'Model Training', 'Learning Plot', 'Model Testing', 'About']
 
     children = [
@@ -920,7 +916,7 @@ def runGUI():
         tab.set_title(i, tab_contents[i])
 
         
-    # Visualizzare il widget Tab
+    # Visualize Tab widgets
     display(tab)
     display(HBox([Image_ID_slider_widget, display_image_button]))
     display(HBox([output_text, output]))
@@ -928,6 +924,6 @@ def runGUI():
 
 
 
-# Run the Graphic ser Interface
+# Run the Graphic User Interface
 runGUI()
 

@@ -297,8 +297,7 @@ def runGUI():
             )
 
             display(progress_bar)        
-            #X, Y = LoadImageArchive(directory_path+'/'+filename)
-            X, Y = LoadImageArchiveAndIntegrate(directory_path+'/'+filename)      
+            X, Y = LoadImageArchive(directory_path+'/'+filename)
 
             # Load the classes file
             df_classes = pd.read_csv(directory_path+'/'+filename.replace('pickle','')+'classes.tsv', sep='\t')

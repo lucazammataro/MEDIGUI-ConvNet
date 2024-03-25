@@ -54,6 +54,8 @@ The dataset used (ALZ.training.set) represents the low-resolution version of ano
 The file "classes.tsv" contains pathological classes associated with the labels. It is pivotal for displaying the results.
 Unzip and load the ALZ.training.set.2024-03-15_21-03-51.model.zip file in the application to quickly experience the power of CNN classification.
 
+contact: luca.zammataro@gmail.com
+
 Enjoy MEDIGUI-ConvNet!
 
 

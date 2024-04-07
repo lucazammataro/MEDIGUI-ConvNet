@@ -2,9 +2,10 @@
 # coding: utf-8
 
 
+
 '''
 
-MEDIGUI-ConvNet v.0.1 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
+MEDIGUI-ConvNet v.0.2 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
 Luca Zammataro, 2024
 
 '''
@@ -26,17 +27,18 @@ from ipyfilechooser import FileChooser
 from IPython.display import display
 import io
 import shutil
+import re
 from contextlib import redirect_stdout
 from tqdm.notebook import tqdm  # Importa tqdm per la barra di avanzamento
 from datetime import datetime
 import pickle
 from IPython.core.display import display, HTML
-
+#display(HTML("<style>.container { width:100% !important; }</style>"))
 
 tf.config.set_visible_devices([], 'GPU')
 
 
-# In[3]:
+# In[2]:
 
 
 # Definisci una funzione per calcolare il massimo all'interno di ciascun elenco
@@ -44,7 +46,7 @@ def max_in_list(lst):
     return max(lst)
 
 
-# In[4]:
+# In[3]:
 
 
 def LoadImageArchive(path):
@@ -101,7 +103,7 @@ def DisplayImage(X, Y, img_index, classes):
     plt.show()
 
 
-# In[8]:
+# In[7]:
 
 
 def splitDataset(X, Y, test_size, random_state):
@@ -111,7 +113,7 @@ def splitDataset(X, Y, test_size, random_state):
     return X_train, X_test, Y_train, Y_test
 
 
-# In[9]:
+# In[8]:
 
 
 def defineModel(X, Y, l1, l2):
@@ -145,7 +147,7 @@ def defineModel(X, Y, l1, l2):
     return model
 
 
-# In[10]:
+# In[9]:
 
 
 def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
@@ -171,7 +173,7 @@ def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
     return model
 
 
-# In[11]:
+# In[10]:
 
 
 def testCNN(X, Y, model, classes, img_index):
@@ -217,14 +219,14 @@ def testCNN(X, Y, model, classes, img_index):
     plt.show()
 
 
-# In[12]:
+# In[11]:
 
 
 def saveModel(model_path):
     tf.keras.models.save_model(model, model_path)
 
 
-# In[13]:
+# In[12]:
 
 
 def loadModel(model_path):
@@ -232,8 +234,9 @@ def loadModel(model_path):
     return loaded_model
 
 
+# In[13]:
 
-# Graphic User Interface
+
 def runGUI():
     
     global output    
@@ -296,6 +299,7 @@ def runGUI():
                 style={'bar_color': 'lightblue'}
             )
 
+
             display(progress_bar)        
             X, Y = LoadImageArchive(directory_path+'/'+filename)
 
@@ -321,9 +325,12 @@ def runGUI():
 
             # Mostra il widget Image_ID_slider_widget e il pulsante display_image_button
             Image_ID_slider_widget.max=X.shape[0]-1
+            
 
         except Exception as e:
-            print(f"Error in loading dataset: {e}")
+            print_message(f"Error in loading dataset: {e}")
+            
+            
 
 
 
@@ -332,6 +339,8 @@ def runGUI():
 
     # Definire la funzione per avviare il training del modello
     def on_button_click_Train_Model(b):
+        
+        
         global model, X_train, X_test, Y_train, Y_test, output
 
         Image_ID_slider_widget.layout.visibility = 'hidden'
@@ -389,6 +398,16 @@ def runGUI():
             test_loss, test_acc = model.evaluate(X_test, Y_test)
             print_message(f'Test accuracy: {test_acc}')
 
+            
+            # Making Plots and Saving files
+
+            # Files\ names embody date: get date and current hour.
+            now = datetime.now()
+
+            # Formattare la data e l'ora come stringa nel formato desiderato
+            timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+            
             # Visualizzazione delle curve di apprendimento
             history_dict = history.history  # Ottieni la storia dell'addestramento
             plt.plot(history_dict['accuracy'], label='accuracy')
@@ -396,9 +415,11 @@ def runGUI():
             plt.xlabel('Epoch')
             plt.ylabel('Accuracy')
             plt.legend(loc='lower right')
+            model_name = filename.replace('pickle','')+timestamp
+            plt.title(f'Model: {model_name} - Test accuracy: {np.round(test_acc, 2)}')
             
-            # Salva il plot in un file
-            plt.savefig(directory_path+'/'+filename.replace('pickle','')+'learning.png')  # Puoi specificare il nome del file e il formato desiderato (ad esempio .png, .jpg, .pdf, etc.)
+            
+            plt.savefig(directory_path+'/'+filename.replace('pickle','')+timestamp+'.learning_plot.png')  # Puoi specificare il nome del file e il formato desiderato (ad esempio .png, .jpg, .pdf, etc.)
             
             # Creare un widget che contenga il grafico
             plot_widget = widgets.Output()
@@ -412,13 +433,6 @@ def runGUI():
             print_message("Model successfully trained!")
 
             # Automatically save the trained model to disk, with date.
-            # Get date and current hour
-            now = datetime.now()
-
-            # Formattare la data e l'ora come stringa nel formato desiderato
-            timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
-
-            # Salvataggio del modello con la data
             saveModel(directory_path+'/Models/'+filename.replace('pickle','')+timestamp+'.model')
 
             print_message("\n")
@@ -445,6 +459,8 @@ def runGUI():
     # Definire la funzione per avviare il testing del modello
 
     def on_button_click_Load_Model(b):
+        import IPython.display as ip_display  # Rinomina il modulo per evitare conflitti di nomi
+
         global model    
         directory_model_path = model_file_chooser.selected_path
 
@@ -459,25 +475,53 @@ def runGUI():
             model = loadModel(directory_model_path)  
             print_message("\n")        
             print_message(f"Model: {directory_model_path} successfully loaded!")
-
+            
             # Mostra il widget Image_ID_slider_widget e il pulsante display_image_button
             Image_ID_slider_widget.layout.visibility = 'visible'
             display_image_button.layout.visibility = 'visible'   
+            #print(directory_model_path)
+            
 
+            # Pattern regex per trovare la data nel nome del file
+            pattern = r'\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}'
 
+            # Trova la data nel nome del file
+            match = re.search(pattern, directory_model_path)
+
+            if match:
+                # Estrai la data dalla corrispondenza
+                date_str = match.group(0)
+            
         except Exception as e:
             print_message("\n")        
             print_message(f"Error in loading model: {e}")
+            
+            
+        try:
+            # Tenta di aprire il file in modalità lettura
+            with open(directory_path+'/'+filename.replace('pickle','')+date_str+'.learning_plot.png', "rb") as file:
+                # Leggi il contenuto del file PNG
+                image_data = file.read()
+                
+            # Pulisci il contenuto del widget di output
+            plot_widget.clear_output(wait=True)
 
-
-
+            # Visualizza l'immagine all'interno del widget di output
+            with plot_widget:
+                #display.display(display.Image(data=image_data, format='png'))
+                ip_display.display(ip_display.Image(data=image_data, format='png'))  # Cambia display in ip_display                
+                
+        except FileNotFoundError:
+            print_message("File not found.")
+        except Exception as lp:
+            print_message(f"An error occurred: {lp}")
 
 
 
     # DATASET LOADING CONTROLS
 
     # Creare il widget FileChooser per selezionare una directory
-    dataset_file_chooser = FileChooser(filter_pattern='*.pickle', title='Select an image dataset')
+    dataset_file_chooser = FileChooser(filter_pattern='*.pickle', title='Select an image dataset', style={'width': '1500px'})
 
     # Creare un pulsante per avviare l'azione
     load_dataset_button = widgets.Button(description="Load dataset")
@@ -509,7 +553,7 @@ def runGUI():
     # MODEL TESTING CONTROLS
 
     # Creare il widget FileChooser per selezionare una directory
-    model_file_chooser = FileChooser(title='Select a saved CNN model')
+    model_file_chooser = FileChooser(title='Select a saved CNN model', style={'width': '1500px'})
 
     # Creare un pulsante per avviare l'azionetitle='\n')
     # Creare un pulsante per avviare l'azione
@@ -546,8 +590,9 @@ def runGUI():
     # Crea il widget HTML con la tabella
     about_table_widget = widgets.HTML(value=table_html)
 
-    # Include controls in a unique Tab
+    # Includere i controlli in un unico Tab
     tab_contents = ['Load Dataset', 'Model Training', 'Learning Plot', 'Model Testing', 'About']
+
 
     children = [
         VBox([dataset_file_chooser, load_dataset_button]), 
@@ -563,14 +608,14 @@ def runGUI():
         tab.set_title(i, tab_contents[i])
 
         
-    # Visualize Tab widgets
+    # Visualizzare il widget Tab
     display(tab)
     display(HBox([Image_ID_slider_widget, display_image_button]))
     display(HBox([output_text, output]))
-    display(HTML("<style>.container { width:100% !important; }</style>"))    
+    display(HTML("<style>.container { width:100% !important; }</style>"))        
+        
 
 
 
-# Run the Graphic User Interface
 runGUI()
 

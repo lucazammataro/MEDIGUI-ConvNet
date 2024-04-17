@@ -1,6 +1,5 @@
-<div style="text-align:center;">
-    <img src="MEDIGUI_ConvNet_Logo.png" alt="Descrizione dell'immagine">
-</div>
+<img src="MEDIGUI_ConvNet_Logo.png" alt="logo" style="display:block; margin:auto;">
+
 
 
 # MEDIGUI-ConvNet

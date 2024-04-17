@@ -47,6 +47,37 @@ import medigui_convnet
 
 You can use the medigui_convnet.ipynb provided if you need it.
 
+## MEDIGUI-ConvNet functions
+
+MEDIGUI-ConvNet functions are directly accessible (you do not need the GUI to use them)
+Import the module as an object:
+
+```
+import medigui_convnet as medigui
+```
+Upload a dataset with LoadImageArchive(path):
+The dataset must be a pickle file of a NumPy array (more information will be available soon about how to construct a dataset)
+```
+X, Y = medigui.LoadImageArchive('path_to_a_dataset.pickle')
+```
+Define a model
+```
+model = medigui.defineModel(X=X, Y=Y, l1=0.01, l2=0.01)
+```
+Check the size of all the arrays.
+```
+# Verify the arrays
+print("X_train shape:", X_train.shape)
+print("X_test shape:", X_test.shape)
+print("Y_train shape:", Y_train.shape)
+print("Y_test shape:", Y_test.shape)
+
+```
+Training
+```
+model = medigui.trainCNN(X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test, epochs=30, batch_size=32)
+```
+
 ## Datasets 
 The dataset used (ALZ.training.set) represents the low-resolution version of another dataset provided by Uraninjo https://www.kaggle.com/uraninjo (https://www.kaggle.com/datasets/uraninjo/augmented-alzheimer-mri-dataset). All the images have been pre-processed and reduced to 100 X 100 pixels. You can download these datasets in pickle format from our Kaggle page at the following link: https://www.kaggle.com/datasets/lucazammataro/augmented-alzheimer-mri-dataset-100x100-pixel.
 

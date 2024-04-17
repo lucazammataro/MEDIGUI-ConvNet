@@ -1,3 +1,5 @@
+<img src="MEDIGUI_ConvNet_Logo.png" alt="Logo">
+
 # MEDIGUI-ConvNet
 MEDIGUI-ConvNet (Medical Imaging Convolutional Neural Network with Graphic User Interface)
 

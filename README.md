@@ -1,4 +1,4 @@
-<div style="display:flex; justify-content:center; align-items:center; height:300px;">
+<div style="text-align:center;">
     <img src="MEDIGUI_ConvNet_Logo.png" alt="Descrizione dell'immagine">
 </div>
 

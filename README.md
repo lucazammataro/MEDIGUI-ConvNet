@@ -49,8 +49,7 @@ You can use the medigui_convnet.ipynb provided if you need it.
 
 ## MEDIGUI-ConvNet functions
 
-MEDIGUI-ConvNet functions are directly accessible (you do not need the GUI to use them)
-Import the module as an object:
+MEDIGUI-ConvNet functions are directly accessible (you do not need the GUI to use them). Import the module as an object:
 
 ```
 import medigui_convnet as medigui

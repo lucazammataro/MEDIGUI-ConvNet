@@ -69,10 +69,6 @@ Generating training and setting datasets
 X_train, X_test, Y_train, Y_test = medigui.splitDataset(X=X, Y=Y, test_size=0.2, random_state=42)
 ```
 
-Define a model
-```
-model = medigui.defineModel(X=X, Y=Y, l1=0.01, l2=0.01)
-```
 Check the size of all the arrays
 ```
 # Verify the arrays

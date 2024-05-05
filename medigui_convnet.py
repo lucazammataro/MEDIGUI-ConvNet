@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-
-
 '''
 
-MEDIGUI-ConvNet v.0.2 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
+MEDIGUI-ConvNet v.0.3 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
 Luca Zammataro, 2024
 
 '''
@@ -22,19 +20,21 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras import regularizers
 from tensorflow.keras.callbacks import History
 import ipywidgets as widgets
-from ipywidgets import interact, interactive, fixed, interact_manual, HBox, VBox, Label, Layout, Output, Tab
+from ipywidgets import interact, interactive, fixed, interact_manual, HBox, VBox, Label, Layout, Output, Tab, Dropdown
 from ipyfilechooser import FileChooser
 from IPython.display import display
 import io
+import os
 import shutil
 import re
 from contextlib import redirect_stdout
 from tqdm.notebook import tqdm  # Importa tqdm per la barra di avanzamento
 from datetime import datetime
 import pickle
-from IPython.core.display import display, HTML
+#from IPython.core.display import display, HTML
 #display(HTML("<style>.container { width:100% !important; }</style>"))
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Imposta il livello di log TensorFlow su ERROR (1) o FATAL (2)
 tf.config.set_visible_devices([], 'GPU')
 
 
@@ -72,6 +72,7 @@ def LoadImageArchive(path):
     return X, Y
 
 
+# In[4]:
 
 
 def DisplayImage(X, Y, img_index, classes):
@@ -103,7 +104,7 @@ def DisplayImage(X, Y, img_index, classes):
     plt.show()
 
 
-# In[7]:
+# In[5]:
 
 
 def splitDataset(X, Y, test_size, random_state):
@@ -113,25 +114,33 @@ def splitDataset(X, Y, test_size, random_state):
     return X_train, X_test, Y_train, Y_test
 
 
-# In[8]:
+# In[6]:
 
 
-def defineModel(X, Y, l1, l2):
+def defineModel(X, Y,
+                Conv2D_1_filters, Conv2D_1_kernelSize,  C2D_1_activation, MP2D_1_filters, 
+                Conv2D_2_filters, Conv2D_2_kernelSize,  C2D_2_activation, MP2D_2_filters, 
+                Conv2D_3_filters, Conv2D_3_kernelSize,  C2D_3_activation, MP2D_3_filters, 
+                Conv2D_4_filters, Conv2D_4_kernelSize,  C2D_4_activation, MP2D_4_filters, 
+                Conv2D_5_filters, Conv2D_5_kernelSize,  C2D_5_activation, MP2D_5_filters,   
+                Dense_1_filters, Dense_1_activation, l1, l2,
+                Dense_2_activation):
+
     # Definizione del modello di rete neurale convoluzionale (CNN) con regolarizzazione L2
     model = models.Sequential([
-        layers.Conv2D(44, (3, 3), activation='relu', input_shape=(X.shape[1], X.shape[2], 1)),
-        layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(128, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(256, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(512, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(512, (3, 3), activation='relu'),
-        layers.MaxPooling2D((2, 2)),
+        layers.Conv2D(Conv2D_1_filters, (Conv2D_1_kernelSize, Conv2D_1_kernelSize), activation=C2D_1_activation, input_shape=(X.shape[1], X.shape[2], 1)),
+        layers.MaxPooling2D((MP2D_1_filters, MP2D_1_filters)),
+        layers.Conv2D(Conv2D_2_filters, (Conv2D_2_kernelSize, Conv2D_2_kernelSize), activation=C2D_2_activation),
+        layers.MaxPooling2D((MP2D_2_filters, MP2D_2_filters)),
+        layers.Conv2D(Conv2D_3_filters, (Conv2D_3_kernelSize, Conv2D_3_kernelSize), activation=C2D_3_activation),
+        layers.MaxPooling2D((MP2D_3_filters, MP2D_3_filters)),
+        layers.Conv2D(Conv2D_4_filters, (Conv2D_4_kernelSize, Conv2D_4_kernelSize), activation=C2D_4_activation),
+        layers.MaxPooling2D((MP2D_4_filters, MP2D_4_filters)),
+        layers.Conv2D(Conv2D_5_filters, (Conv2D_5_kernelSize, Conv2D_5_kernelSize), activation=C2D_5_activation),
+        layers.MaxPooling2D((MP2D_5_filters, MP2D_5_filters)),
         layers.Flatten(),
-        layers.Dense(128, activation='relu', kernel_regularizer=regularizers.l1_l2(l1=l1, l2=l2)),  # Aggiunta di regolarizzazione L2
-        layers.Dense(Y.shape[1], activation='softmax')
+        layers.Dense(Dense_1_filters, activation=Dense_1_activation, kernel_regularizer=regularizers.l1_l2(l1=l1, l2=l2)),  # Aggiunta di regolarizzazione L2
+        layers.Dense(Y.shape[1], activation=Dense_2_activation)
     ])
 
 
@@ -147,7 +156,7 @@ def defineModel(X, Y, l1, l2):
     return model
 
 
-# In[9]:
+# In[7]:
 
 
 def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
@@ -173,7 +182,7 @@ def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
     return model
 
 
-# In[10]:
+# In[8]:
 
 
 def testCNN(X, Y, model, classes, img_index):
@@ -215,18 +224,10 @@ def testCNN(X, Y, model, classes, img_index):
     #print('True Class:', np.argmax(Y[img_index]))
     
     plt.imshow(X[img_index], cmap='gray')
-
     plt.show()
 
 
-# In[11]:
-
-
-def saveModel(model_path):
-    tf.keras.models.save_model(model, model_path)
-
-
-# In[12]:
+# In[9]:
 
 
 def loadModel(model_path):
@@ -234,10 +235,23 @@ def loadModel(model_path):
     return loaded_model
 
 
-# In[13]:
+# In[10]:
+
+
+def saveModel(model_path):
+    tf.keras.models.save_model(model, model_path)
+
+
+# In[30]:
 
 
 def runGUI():
+    
+    # Create the widget FileChooser Selecting the Logo
+    logo_file_path = os.getcwd()+"/MEDIGUI_ConvNet_Logo.small.png"  # Imposta il percorso del file del logo
+    with open(logo_file_path, "rb") as file:
+        logo_data = file.read()
+    logo_widget = widgets.Image(value=logo_data, format='png', layout={'width': '200px', 'height': '200px'})
     
     global output    
     output = Output()
@@ -251,8 +265,8 @@ def runGUI():
     # Creare un widget di testo per visualizzare i messaggi
     output_text = widgets.Textarea(description="Log:")
     # Impostare la larghezza e l'altezza desiderate
-    output_text.layout.width = '800px'
-    output_text.layout.height = '550px'
+    output_text.layout.width = '400px'
+    output_text.layout.height = '350px'
 
 
     # Funzione per stampare un messaggio nel widget di testo
@@ -263,9 +277,93 @@ def runGUI():
 
     # Definire la funzione DisplayTest
     def DisplayTest(X, Y, Image_ID):
+
         #global output
         with output:
-            testCNN(X=X, Y=Y, model=model, classes=classes, img_index=Image_ID)        
+            
+            # Display a selected image and its patterns
+            testCNN(X=X, Y=Y, model=model, classes=classes, img_index=Image_ID) 
+            
+            if feature_mapping.value:
+                
+                img_index = Image_ID
+                WD = os.getcwd()+'/'
+                directory_name = WD + 'Test-' + str(img_index)
+                if not os.path.exists(directory_name):
+                    # Se non esiste, creala
+                    os.makedirs(directory_name)
+                
+
+                # Prendi l'immagine dal vettore X_train
+                image_array = X[img_index]
+
+                # Espandi le dimensioni dell'immagine per adattarle al formato dell'input del modello
+                image_array = np.expand_dims(image_array, axis=0)
+                
+                # Esegui l'inferenza sul modello per ottenere le attivazioni degli strati intermedi
+                layer_outputs = [layer.output for layer in model.layers[1:]]  # Escludi il layer di input
+                activation_model = tf.keras.models.Model(inputs=model.input, outputs=layer_outputs)
+                activations = activation_model.predict(image_array)
+                '''
+                # Visualizzazione delle attivazioni degli strati intermedi
+                for i, (activation, layer) in enumerate(zip(activations, model.layers[1:])):
+                    layer_type = layer.__class__.__name__  # Tipo di strato
+                    print(f"Activation layer {i}: {layer_type}")  # Stampa il tipo di strato
+                    if len(activation.shape) == 4:
+                        num_filters = activation.shape[3]
+                        rows = int(np.ceil(np.sqrt(num_filters)))
+                        cols = int(np.ceil(num_filters / rows))
+                        plt.figure(figsize=(8, 8))
+                        for j in range(num_filters):
+                            if j < num_filters:
+                                plt.subplot(rows, cols, j+1)
+                                plt.imshow(activation[0, :, :, j], cmap='viridis')
+                                plt.xticks([])
+                                plt.yticks([])
+                        plt.savefig(WD+'/'+'Test-'+str(img_index)+'/Test-'+str(img_index)+'.Filter-'+str(i)+'.'+str(j)+'.'+layer_type+'.FeatureMapping.png', bbox_inches='tight')                
+                        plt.show()
+                '''
+                # Visualization of activations of intermediate layers
+                for i, activation in enumerate(activations):
+                    #print("Layer {}: {}".format(i, model.layers[i+1].name))  # Print the name of the layer
+                    LayerName = "Layer {}: {}".format(i+1, model.layers[i+1].name).replace('/','')
+                    print(LayerName)
+
+                    # Handle different layer types
+                    if len(activation.shape) == 4:  # Conv2D layer
+                        num_filters = activation.shape[3]
+                        rows = int(np.ceil(np.sqrt(num_filters)))
+                        cols = int(np.ceil(num_filters / rows))
+                        plt.figure(figsize=(8, 8))
+                        for j in range(num_filters):
+                            if j < num_filters:
+                                plt.subplot(rows, cols, j+1)
+                                plt.imshow(activation[0, :, :, j], cmap='viridis')
+                                plt.xticks([])
+                                plt.yticks([])
+                        plt.savefig(WD + '/Test-' + str(img_index) + '/Test-' + str(img_index) + '.Filter-' + LayerName + '.' + str(i) + '.' + str(j) + '.FeatureMapping.png', bbox_inches='tight')
+                        plt.show()
+
+                    elif len(activation.shape) == 2:  # Dense layer
+                        num_neurons = activation.shape[1]
+                        plt.figure(figsize=(8, 8))
+                        plt.plot(activation.flatten())  # Plot activations of all neurons
+                        plt.title('Dense Layer Activations')
+                        plt.xlabel('Neuron Index')
+                        plt.ylabel('Activation Value')
+                        plt.savefig(WD + '/Test-' + str(img_index) + '/Test-' + str(img_index) + '.DenseLayer-' + LayerName + '.' + str(i) + '.FeatureMapping.png', bbox_inches='tight')
+                        plt.show()
+
+                    elif len(activation.shape) == 1:  # Flatten layer
+                        num_units = activation.shape[0]
+                        plt.figure(figsize=(8, 8))
+                        plt.plot(activation)  # Plot activations of all units
+                        plt.title('Flatten Layer Activations')
+                        plt.xlabel('Unit Index')
+                        plt.ylabel('Activation Value')
+                        plt.savefig(WD + '/Test-' + str(img_index) + '/Test-' + str(img_index) + '.FlattenLayer-' + LayerName + '.' + str(i) + '.FeatureMapping.png', bbox_inches='tight')
+                        plt.show()       
+                        
         output.clear_output(wait=True) 
 
 
@@ -278,7 +376,7 @@ def runGUI():
     # Creare il widget Text
     Image_ID_slider_widget = widgets.IntSlider(value=0, min=0, max=X.shape[1]) 
     # Creare un pulsante interattivo
-    display_image_button = widgets.Button(description="Display a Test Image")
+    display_image_button = widgets.Button(description="Display a Test Image",  layout={'width': '200px'}, button_style='info', style={'button_color': '#2a98db'})
     display_image_button.on_click(on_button_click_DisplayTest)
     # Nascondere inizialmente il widget Image_ID_slider_widget e il pulsante display_image_button
     Image_ID_slider_widget.layout.visibility = 'hidden'
@@ -287,6 +385,8 @@ def runGUI():
     # Funzione per gestire il clic sul pulsante di azione
     def on_button_click_Load_Dataset(b):
         global X, Y, classes, output, directory_path, filename
+        
+        # Define for the first time the Main Directory
         directory_path = dataset_file_chooser.selected_path   
         filename = dataset_file_chooser.selected_filename
         try:
@@ -349,11 +449,13 @@ def runGUI():
 
         try:
             # Suddividere il dataset in set di training e di test
-            X_train, X_test, Y_train, Y_test = splitDataset(X=X, Y=Y, test_size=0.2, random_state=42)
+            X_train, X_test, Y_train, Y_test = splitDataset(X=X, Y=Y, test_size=test_size_widget.value, random_state=seed_widget.value)
+            
+            #print_message(f"Seed: {seed_widget.value}")
 
             # Verifica le nuove forme degli array
             print_message("\n")
-            print_message("Training and Testing sets have been randomly splitted.")
+            print_message(f"Training and testing sets were randomly split based on the selected seed: {seed_widget.value}")
             print_message("\n")
             print_message("Training set:")
             print_message(f"X_train shape: {X_train.shape}")
@@ -365,7 +467,14 @@ def runGUI():
             print_message("\n")            
 
             # Definire il modello
-            model = defineModel(X=X, Y=Y, l1=l1_widget.value, l2=l2_widget.value)
+            model = defineModel(X=X, Y=Y, 
+                                Conv2D_1_filters=int(C2D_1_f.value), Conv2D_1_kernelSize=int(C2D_1_k.value), C2D_1_activation=C2D_1_a.value, MP2D_1_filters=int(MP2D_1.value),
+                                Conv2D_2_filters=int(C2D_2_f.value), Conv2D_2_kernelSize=int(C2D_2_k.value), C2D_2_activation=C2D_1_a.value, MP2D_2_filters=int(MP2D_2.value), 
+                                Conv2D_3_filters=int(C2D_3_f.value), Conv2D_3_kernelSize=int(C2D_3_k.value), C2D_3_activation=C2D_1_a.value, MP2D_3_filters=int(MP2D_3.value),
+                                Conv2D_4_filters=int(C2D_4_f.value), Conv2D_4_kernelSize=int(C2D_4_k.value), C2D_4_activation=C2D_1_a.value, MP2D_4_filters=int(MP2D_4.value), 
+                                Conv2D_5_filters=int(C2D_5_f.value), Conv2D_5_kernelSize=int(C2D_5_k.value), C2D_5_activation=C2D_1_a.value, MP2D_5_filters=int(MP2D_5.value),                                 
+                                Dense_1_filters=int(D_1_f.value), Dense_1_activation=D_1_a.value, l1=l1_widget.value, l2=l2_widget.value,
+                                Dense_2_activation=D_2_a.value)
 
             # Stampare il summary del modello
             print_message("Model Summary:")
@@ -392,7 +501,9 @@ def runGUI():
             pbar.set_postfix_str("")
             pbar.set_description_str("")
             pbar.refresh()
+            
 
+            
 
             # Valutazione del modello
             test_loss, test_acc = model.evaluate(X_test, Y_test)
@@ -406,19 +517,27 @@ def runGUI():
 
             # Formattare la data e l'ora come stringa nel formato desiderato
             timestamp = now.strftime("%Y-%m-%d_%H-%M-%S")
+            
+            # Plot History
 
-            
-            # Visualizzazione delle curve di apprendimento
-            history_dict = history.history  # Ottieni la storia dell'addestramento
-            plt.plot(history_dict['accuracy'], label='accuracy')
-            plt.plot(history_dict['val_accuracy'], label='val_accuracy')
-            plt.xlabel('Epoch')
-            plt.ylabel('Accuracy')
-            plt.legend(loc='lower right')
-            model_name = filename.replace('pickle','')+timestamp
-            plt.title(f'Model: {model_name} - Test accuracy: {np.round(test_acc, 2)}')
-            
-            
+            # Estrai le metriche di addestramento e validazione dalla storia
+            train_loss = history.history['loss']
+            val_loss = history.history['val_loss']
+            train_accuracy = history.history['accuracy']
+            val_accuracy = history.history['val_accuracy']
+            epochs = range(1, len(train_loss) + 1)
+
+            # Plot della perdita
+            plt.figure(figsize=(10, 5))
+            plt.plot(epochs, train_loss, 'orange', label='Training loss')
+            plt.plot(epochs, val_loss, 'red', label='Validation loss')
+            plt.plot(epochs, train_accuracy, 'blue', label='Training accuracy')
+            plt.plot(epochs, val_accuracy, 'green', label='Validation accuracy')
+            plt.title(f'{timestamp} - Seed: {seed_widget.value} - TL:{np.round(train_loss[-1],3)}/VL:{np.round(val_loss[-1],3)} - TA:{np.round(train_accuracy[-1],3)}/VA:{np.round(val_accuracy[-1],3)}')
+            plt.xlabel('Epochs')
+            plt.ylabel('Loss/Accuracy')
+            plt.legend()
+            #plt.show()
             plt.savefig(directory_path+'/'+filename.replace('pickle','')+timestamp+'.learning_plot.png')  # Puoi specificare il nome del file e il formato desiderato (ad esempio .png, .jpg, .pdf, etc.)
             
             # Creare un widget che contenga il grafico
@@ -462,7 +581,9 @@ def runGUI():
         import IPython.display as ip_display  # Rinomina il modulo per evitare conflitti di nomi
 
         global model    
+    
         directory_model_path = model_file_chooser.selected_path
+        
 
         # Controlla se il dataset è stato caricato
         if X.shape[1] == 1 :
@@ -499,7 +620,11 @@ def runGUI():
             
         try:
             # Tenta di aprire il file in modalità lettura
-            with open(directory_path+'/'+filename.replace('pickle','')+date_str+'.learning_plot.png', "rb") as file:
+            corrected_filename = filename.replace('pickle','').replace('testing.dataset','').replace('training.dataset','').replace(date_str,'').replace('...','')
+            corrected_filename = directory_path+'/'+corrected_filename+'.'+date_str+'.learning_plot.png'
+            #print_message(corrected_filename)
+            with open(corrected_filename, "rb") as file:
+                
                 # Leggi il contenuto del file PNG
                 image_data = file.read()
                 
@@ -512,19 +637,63 @@ def runGUI():
                 ip_display.display(ip_display.Image(data=image_data, format='png'))  # Cambia display in ip_display                
                 
         except FileNotFoundError:
-            print_message("File not found.")
+            print_message("Learning Plot file not found.")
         except Exception as lp:
             print_message(f"An error occurred: {lp}")
+            
+
+        # Create the First 100 plot
+
+        # F1 score calculation (it works ONLY after you did the training!)
+        from sklearn.metrics import f1_score
+        y_pred = model.predict(X)
+        y_pred_classes = np.argmax(y_pred, axis=1)
+        y_pred_classes =to_categorical(y_pred_classes, Y.shape[1])
+        #f1 = f1_score(Y_test, y_pred_classes, average='weighted')
+        #f1
+
+        WD = os.getcwd()+'/'
+
+        x = len(classes)
+        def list_my_classes(x):
+            return [i for i in range(x)]
+
+        classes_list = list_my_classes(x)
+        classes_keys = classes_list
+        classes_values = classes
+        tuple_lists = zip(classes_keys, classes_values)
+        dict_classes = dict(tuple_lists)    
+
+        rows = 10
+        cols = 10
+        fig, axes = plt.subplots(rows, cols, figsize=(30, 30))
+        
+        for i in range(rows):
+            for j in range(cols):
+                idx = i * cols + j  # Calcola l'indice dell'immagine nella lista
+                axes[i, j].imshow(X[idx])
+                real_output = dict_classes[np.argmax(Y, axis=1)[idx]]
+                prediction = dict_classes[np.argmax(y_pred, axis=1)[idx]]  # Ottieni la predizione per l'immagine corrente
+                axes[i, j].set_title("i:{} r:{} p:{}".format(idx, real_output, prediction), fontsize=16)  # Aggiungi il titolo desiderato
+                axes[i, j].axis('off')  # Rimuovi gli assi
+
+        plt.subplots_adjust(wspace=0.5, hspace=0.5)  # Aggiungi spaziatura tra le immagini
+    
+        print('\nShow the first 100 predictions:')        
+        plt.savefig(WD+'PredictionTestPlot.png', bbox_inches='tight')
+        plt.show()
+
+
 
 
 
     # DATASET LOADING CONTROLS
 
     # Creare il widget FileChooser per selezionare una directory
-    dataset_file_chooser = FileChooser(filter_pattern='*.pickle', title='Select an image dataset', style={'width': '1500px'})
+    dataset_file_chooser = FileChooser(filter_pattern='*.pickle', title='Select an image dataset')
 
     # Creare un pulsante per avviare l'azione
-    load_dataset_button = widgets.Button(description="Load dataset")
+    load_dataset_button = widgets.Button(description="Load dataset", layout={'width': '100px'}, button_style='info', style={'button_color': '#2a98db'})
 
     # Collegare la funzione on_button_click all'evento di clic del pulsante
     load_dataset_button.on_click(on_button_click_Load_Dataset)
@@ -534,62 +703,154 @@ def runGUI():
     # MODEL TRAINING CONTROLS
 
     # Creare i widget per controllare i parametri di training del modello
+
+    seed_widget = widgets.IntSlider(value=42, min=1, max=10000000, step=1, description='Seed:')    
+    seed_widget.style.handle_color = 'orange'                        
     epochs_widget = widgets.IntSlider(value=30, min=1, max=100, step=1, description='Epochs:')
+    epochs_widget.style.handle_color = 'orange'      
+
+    test_size_widget = widgets.FloatSlider(value=0.2, min=0.1, max=1.0, step=0.1, description='Test Size:')
+    test_size_widget.style.handle_color = 'orange'                                    
     batch_size_widget = widgets.IntSlider(value=32, min=1, max=128, step=1, description='Batch Size:')
+    batch_size_widget.style.handle_color = 'orange'                                
+    
+    Conv2D_filter_options =['2','4','8','16','32','44','64','128','256','512']
+    
+    C2D_1_f = widgets.Dropdown(options=Conv2D_filter_options, value='44', description='C2D1_filt:')
+    C2D_1_k = widgets.IntSlider(value='3', min=1, max=10, step=1, description='C2D1_Ker:')
+    C2D_1_k.style.handle_color = 'lightblue'        
+    C2D_1_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='C2D1_act:')
+    MP2D_1 = widgets.IntSlider(value='2', min=1, max=10, step=1, description='MP2D1:')  
+    MP2D_1.style.handle_color = 'lightblue'            
+    
+    
+    C2D_2_f = widgets.Dropdown(options=Conv2D_filter_options, value='128', description='C2D2_filt:')
+    C2D_2_k = widgets.IntSlider(value='3', min=1, max=10, step=1, description='C2D2_Ker:')    
+    C2D_2_k.style.handle_color = 'lightblue'            
+    C2D_2_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='C2D2_act:')    
+    MP2D_2 = widgets.IntSlider(value='2', min=1, max=10, step=1, description='MP2D2:')  
+    MP2D_2.style.handle_color = 'lightblue'                
+    
+    C2D_3_f = widgets.Dropdown(options=Conv2D_filter_options, value='256', description='C2D3_filt:')
+    C2D_3_k = widgets.IntSlider(value='3', min=1, max=10, step=1, description='C2D3_Ker:')    
+    C2D_3_k.style.handle_color = 'lightblue'            
+    C2D_3_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='C2D3_act:')    
+    MP2D_3 = widgets.IntSlider(value='2', min=1, max=10, step=1, description='MP2D3:')  
+    MP2D_3.style.handle_color = 'lightblue'                
+    
+    C2D_4_f = widgets.Dropdown(options=Conv2D_filter_options, value='512', description='C2D4_filt:')
+    C2D_4_k = widgets.IntSlider(value='3', min=1, max=10, step=1, description='C2D4_Ker:')    
+    C2D_4_k.style.handle_color = 'lightblue'            
+    C2D_4_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='C2D4_act:')    
+    MP2D_4 = widgets.IntSlider(value='2', min=1, max=10, step=1, description='MP2D4:')  
+    MP2D_4.style.handle_color = 'lightblue'                
+    
+    C2D_5_f = widgets.Dropdown(options=Conv2D_filter_options, value='512', description='C2D5_filt:')
+    C2D_5_k = widgets.IntSlider(value='3', min=1, max=10, step=1, description='C2D5_Ker:')    
+    C2D_5_k.style.handle_color = 'lightblue'            
+    C2D_5_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='C2D5_act:')    
+    MP2D_5 = widgets.IntSlider(value='2', min=1, max=10, step=1, description='MP2D5:')    
+    MP2D_5.style.handle_color = 'lightblue'                
+
+    D_1_f = widgets.Dropdown(options=Conv2D_filter_options, value='128', description='Dense1_filt:')
+    D_1_a = widgets.Dropdown(options=['relu', 'softmax'], value='relu', description='Dense1_act:') 
     l1_widget = widgets.FloatSlider(value=0.001, min=0, max=0.1, step=0.001, description='L1:')
+    l1_widget.style.handle_color = 'lightblue'                    
     l2_widget = widgets.FloatSlider(value=0.001, min=0, max=0.1, step=0.001, description='L2:')
+    l2_widget.style.handle_color = 'lightblue'                        
+    
+    D_2_a = widgets.Dropdown(options=['relu', 'softmax'], value='softmax', description='Dense2_act:')
+    
 
 
     # Creare un pulsante per avviare il training del modello
-    train_model_button = widgets.Button(description="Train Model")
+    train_model_button = widgets.Button(description="Train Model", layout={'width': '100px'}, button_style='info', style={'button_color': '#2a98db'})
 
     # Collegare la funzione on_button_click_Train_Model all'evento di clic del pulsante
     train_model_button.on_click(on_button_click_Train_Model)
 
     # Mettere insieme i widget e i pulsanti all'interno di una VBox
-    training_controls_box = VBox([epochs_widget, batch_size_widget, l1_widget, l2_widget, train_model_button])
+    training_controls_box = VBox([
+        HBox([seed_widget, epochs_widget, batch_size_widget, test_size_widget]),
+        HBox([C2D_1_f, C2D_1_k, C2D_1_a, MP2D_1]),
+        HBox([C2D_2_f, C2D_2_k, C2D_2_a, MP2D_2]),
+        HBox([C2D_3_f, C2D_3_k, C2D_3_a, MP2D_3]),
+        HBox([C2D_4_f, C2D_4_k, C2D_4_a, MP2D_4]),
+        HBox([C2D_5_f, C2D_5_k, C2D_5_a, MP2D_5]),        
+        HBox([D_1_f, D_1_a, l1_widget, l2_widget]),
+        HBox([D_2_a]),
+        train_model_button])
 
 
     # MODEL TESTING CONTROLS
+    
+    feature_mapping = widgets.Checkbox(description='Feature Mapping')    
 
     # Creare il widget FileChooser per selezionare una directory
-    model_file_chooser = FileChooser(title='Select a saved CNN model', style={'width': '1500px'})
+    model_file_chooser = FileChooser(title='Select a saved CNN model')
 
     # Creare un pulsante per avviare l'azionetitle='\n')
     # Creare un pulsante per avviare l'azione
-    load_model_button = widgets.Button(description="Load a saved model")
+    load_model_button = widgets.Button(description="Load the model",  layout={'width': '200px'}, button_style='info', style={'button_color': '#2a98db'})
 
     # Collegare la funzione on_button_click all'evento di clic del pulsante
     load_model_button.on_click(on_button_click_Load_Model)
 
+    
+
+    
 
     # ABOUT TAB
+    
+    
+    name = 'MEDIGUI-ConvNet' 
+    description = 'Medical Imaging Convolutional Neural Network with Graphic User Interface'
+    author = 'Luca Zammataro, Lunan Foldomics LLC, 2024'
+    license = 'GNU General Public License v3.0'
 
-    author = 'Luca Zammataro, 2024'
-    algorithm = 'MEDIGUI-ConvNet (Medical Imaging Convolutional Neural Network with Graphic User Interface)'
 
     # Crea la tabella con i tuoi dati
     table_html = f"""
     <table>
       <tr>
-        <th colspan="5" style="text-align:center;">Algorithm: {algorithm}</th>
+        <th colspan="5" style="text-align:left;">{name}</th>
       </tr>
       <tr>
         <td colspan="5"></td>
       </tr>
+      
       <tr>
-        <th style="text-align:left;">Author:</th>
-        <th></th>
-        <th></th>
-        <th></th>
-        <th style="text-align:left;">{author}</th>
+        <th colspan="5" style="text-align:left;">{description}</th>
       </tr>
+      <tr>
+        <td colspan="5"></td>
+      </tr>
+      
+      <tr>
+        <th colspan="5" style="text-align:left;">{author}</th>
+      </tr>
+      <tr>
+        <td colspan="5"></td>
+      </tr>
+
+      <tr>
+        <th colspan="5" style="text-align:left;">{license}</th>
+      </tr>
+      <tr>
+        <td colspan="5"></td>
+      </tr>
+
+      
     </table>
     """
-
-    # Crea il widget HTML con la tabella
-    about_table_widget = widgets.HTML(value=table_html)
-
+    
+    # Make HTML widget with the table
+    
+    about_table_widget = VBox([
+        HBox([logo_widget, widgets.HTML(value=table_html)])
+    ])    
+    
+    
     # Includere i controlli in un unico Tab
     tab_contents = ['Load Dataset', 'Model Training', 'Learning Plot', 'Model Testing', 'About']
 
@@ -597,25 +858,26 @@ def runGUI():
     children = [
         VBox([dataset_file_chooser, load_dataset_button]), 
         VBox([training_controls_box]),
-        VBox([plot_widget]),  # Visualizzazione del plot nel tab "Learning Plot"
-        VBox([model_file_chooser, load_model_button]),
+        VBox([plot_widget]),          
+        VBox([model_file_chooser, load_model_button, feature_mapping]),        
         VBox([about_table_widget])
     ]
 
     tab = Tab()
+    
     tab.children = children
     for i in range(len(children)):
         tab.set_title(i, tab_contents[i])
+        
 
         
     # Visualizzare il widget Tab
     display(tab)
     display(HBox([Image_ID_slider_widget, display_image_button]))
     display(HBox([output_text, output]))
-    display(HTML("<style>.container { width:100% !important; }</style>"))        
-        
+    #display(HTML("<style>.container { width:100% !important; }</style>"))        
+
 
 
 
 runGUI()
-

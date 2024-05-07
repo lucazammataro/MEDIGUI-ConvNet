@@ -4,7 +4,7 @@
 '''
 
 MEDIGUI-ConvNet v.0.3 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
-Luca Zammataro, 2024
+Luca Zammataro, LUNAN FOLDOMICS LLC, HOUSTON TX, 2024
 
 '''
 

@@ -48,7 +48,7 @@ The python module medigui_convnet.py contains all the MEDIGUI-ConvNet functions 
 ```
 import medigui_convnet
 ```
-
+the RunGUI function starts automatically. 
 You can use the medigui_convnet.ipynb provided if you need it.
 
 ## MEDIGUI-ConvNet functions

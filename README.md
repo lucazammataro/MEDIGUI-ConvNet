@@ -78,7 +78,20 @@ print("Y_train shape:", Y_train.shape)
 print("Y_test shape:", Y_test.shape)
 
 ```
-Training
+Defining a model:
+You can define the CNN architecture by adjusting filters, the number of neurons, and activation functions.
+```
+model = defineModel(X=X, Y=Y,
+              Conv2D_1_filters=44, Conv2D_1_kernelSize=3,  C2D_1_activation='relu', MP2D_1_filters=2, 
+                Conv2D_2_filters=128, Conv2D_2_kernelSize=3,  C2D_2_activation='relu', MP2D_2_filters=2, 
+                Conv2D_3_filters=256, Conv2D_3_kernelSize=3,  C2D_3_activation='relu', MP2D_3_filters=2, 
+                Conv2D_4_filters=512, Conv2D_4_kernelSize=3,  C2D_4_activation='relu', MP2D_4_filters=2,
+                Conv2D_5_filters=512, Conv2D_5_kernelSize=3,  C2D_5_activation='relu', MP2D_5_filters=2, 
+                Dense_1_filters=128, Dense_1_activation='relu', l1=0.001, l2=0.001,
+                Dense_2_activation='softmax')
+```
+Training:
+You can manipulate training epochs, batch size, and two regularization parameters to fine-tune the training performances.
 ```
 model = medigui.trainCNN(X_train=X_train, X_test=X_test, Y_train=Y_train, Y_test=Y_test, epochs=30, batch_size=32)
 ```

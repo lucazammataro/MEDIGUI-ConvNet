@@ -7,8 +7,17 @@ MEDIGUI-ConvNet (Medical Imaging Convolutional Neural Network with Graphic User 
 
 ## Description
 
-This repository contains the code for MEDIGUI-ConvNet, a Graphic User Interface for Python Jupyter Notebooks, which handles Convolutional Neural Networks for classifying medical images (MRI, CT SCAN, or digital pathology)
-MEDGUI-convnet has been tested in MacOS environments for M1 processors with Jupyter Notebook, and in a Google Colab environment, while some functionalities like the progress bar, appears to be unsupported with Jupyter Lab. 
+MEDIGUI-ConvNet is an application that leverages the convenience of interactive widgets in Jupyter to classify MRI and CT SCAN images. It makes it effortless to load datasets, train Convolutional Neural Network (CNN) models, and test these models on images.
+
+The general structure of the application is as follows:
+
+1. Tab for dataset loading: Allows loading a dataset of images in pickle format.
+2. Tab for model training: This feature-rich tab equips you with controls to fine-tune model training, such as the number of epochs, batch size, and a variety of CNN architecture options. This flexibility allows you to adapt the training process to your specific needs, giving you a sense of control over your work.
+3. Tab for model loading: Allows loading a previously trained CNN model.
+4. Tab for model testing: This tab contains a widget for selecting an image from the dataset and displaying the model's prediction. It also allows you to display feature maps from various layers of the CNN.
+5. Tab for learning plot visualization: Displays the model's training progress plot over time.
+
+MEDGUI-convnet has undergone rigorous testing in MacOS environments for M1 processors with Jupyter Notebook and in a Google Colab environment. While some functionalities, like the progress bar, may not be fully supported with Jupyter Lab, you can trust in the reliability of the application in these tested environments. 
 
 ## Virtual Environment
 

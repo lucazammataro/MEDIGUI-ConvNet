@@ -5,6 +5,8 @@
 # MEDIGUI-ConvNet
 MEDIGUI-ConvNet (Medical Imaging Convolutional Neural Network with Graphic User Interface)
 
+Developed by Luca Zammataro, Lunan Foldomics LLC, Copyright (C) 2024
+
 ## Description
 
 MEDIGUI-ConvNet is an application that leverages the convenience of interactive widgets in Jupyter to classify MRI and CT SCAN images. It makes it effortless to load datasets, train Convolutional Neural Network (CNN) models, and test these models on images.

@@ -3,8 +3,10 @@
 
 '''
 
-MEDIGUI-ConvNet v.0.4.0 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
-Luca Zammataro, LUNAN FOLDOMICS LLC, HOUSTON TX, 2024
+MEDIGUI-ConvNet v.0.4.1 (Medical Imaging Convolutional Neural Network with Graphic User Interface)
+Luca Zammataro, LUNAN FOLDOMICS LLC, HOUSTON TX, Copyright (c) 2024
+www.lunanfoldomicsllc.org
+2024, June 1st
 
 '''
 
@@ -29,18 +31,21 @@ import os
 import shutil
 import re
 from contextlib import redirect_stdout
-from tqdm.notebook import tqdm  # Importa tqdm per la barra di avanzamento
 from datetime import datetime
 import pickle
-#from IPython.core.display import display, HTML
-#display(HTML("<style>.container { width:100% !important; }</style>"))
-
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Imposta il livello di log TensorFlow su ERROR (1) o FATAL (2)
 tf.config.set_visible_devices([], 'GPU')
 
 
-# In[27]:
+# In[29]:
+
+
+# HTML Layout 
+get_ipython().run_cell_magic('html', '', '<style>\n    .jp-Notebook {\n        display: flex;\n        justify-content: center;\n    }\n</style>\n')
+get_ipython().run_cell_magic('html', '', '<style>\n    :root {\n        --jp-layout-color0: #065C7A;\n    }\n    body, .jp-Notebook, .jp-Cell {\n        background-color: #065C7A !important;\n    }\n</style>\n')
+
+
+# In[30]:
 
 
 # Definisci una funzione per calcolare il massimo all'interno di ciascun elenco
@@ -48,7 +53,7 @@ def max_in_list(lst):
     return max(lst)
 
 
-# In[28]:
+# In[31]:
 
 
 # This function has been crafted for b/w image
@@ -75,7 +80,7 @@ def LoadImageArchive(path):
     return X, Y
 
 
-# In[29]:
+# In[32]:
 
 
 def splitDataset(X, Y, test_size, random_state):
@@ -85,7 +90,7 @@ def splitDataset(X, Y, test_size, random_state):
     return X_train, X_test, Y_train, Y_test
 
 
-# In[30]:
+# In[33]:
 
 
 def defineModel(X, Y,
@@ -127,6 +132,7 @@ def defineModel(X, Y,
     return model
 
 
+# In[34]:
 
 
 def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
@@ -153,7 +159,7 @@ def trainCNN(X_train, X_test, Y_train, Y_test, epochs, batch_size):
     return model
 
 
-# In[33]:
+# In[35]:
 
 
 def loadModel(model_path):
@@ -161,7 +167,7 @@ def loadModel(model_path):
     return loaded_model
 
 
-# In[34]:
+# In[36]:
 
 
 def loadClasses(classes_path):
@@ -171,14 +177,14 @@ def loadClasses(classes_path):
     return classes
 
 
-# In[35]:
+# In[37]:
 
 
 def saveModel(model_path):
     tf.keras.models.save_model(model, model_path)
 
 
-# In[36]:
+# In[38]:
 
 
 def testCNN(X, Y, model, classes, img_index, testCNN_output):
@@ -215,7 +221,7 @@ def testCNN(X, Y, model, classes, img_index, testCNN_output):
         
 
 
-# In[37]:
+# In[39]:
 
 
 def featureMapsDisplay(feature_mapping_plot_Dropdown_index, feature_mapping_plot_output):
@@ -251,7 +257,7 @@ def featureMapsDisplay(feature_mapping_plot_Dropdown_index, feature_mapping_plot
         
 
 
-# In[38]:
+# In[40]:
 
 
 '''
@@ -268,14 +274,29 @@ os.remove
 log_output_text = widgets.Textarea(description="Log:")  # Log widget
 log_output_text.style = {'font-size': '10px', 'font-family': 'Arial, sans-serif'}
 # Set window dimensions
-log_output_text.layout.width = '900px'
-log_output_text.layout.height = '100px'
+log_output_text.layout.width = '800px'
+log_output_text.layout.height = '200px'
 
 
 # Function for print a message using the Log winsow
 def print_message(message):
     log_output_text.value += message + '\n'
 
+    
+# Save the TextArea content in an output log file
+def save_to_file(change):
+    text = log_output_text.value
+    with open('log.txt', 'w') as file:
+        file.write(text)
+
+    
+# Observe the log modifications
+log_output_text.observe(save_to_file, names='value')
+
+
+# INTRO
+print_message('MEDIGUI-ConvNet version 0.4.0')
+print_message('')
     
 
     
@@ -293,31 +314,22 @@ load_dataset_button = widgets.Button(description="Load dataset", layout={'width'
 # Function for handling the event Load_Dataset
 def on_button_click_Load_Dataset(b):
     global X, Y, classes, directory_path, filename
-
+    
+    progress_bar.layout.visibility = 'visible'
 
     # Define for the first time the Main Directory
     directory_path = dataset_file_chooser.selected_path   
     filename = dataset_file_chooser.selected_filename
     try:
-        # Creare una barra di progresso
-        progress_bar = widgets.IntProgress(
-            value=50,
-            min=0,
-            max=100,
-            description='Loading...',
-            style={'bar_color': 'lightblue'}
-        )
 
-
-        display(progress_bar)        
-        X, Y = LoadImageArchive(directory_path+'/'+filename)
-
+        # Update progress bar
+        progress_bar.value += 50               
+        
         # Load the classes file
         df_classes = pd.read_csv(directory_path+'/'+filename.replace('pickle','')+'classes.tsv', sep='\t')
         classes = list(df_classes['class'].values)        
-
-        # Aggiorna la barra di progresso
-        progress_bar.value += 50       
+        
+        X, Y = LoadImageArchive(directory_path+'/'+filename)
 
         print_message("\n")
         print_message(f"Dataset: {directory_path+'/'+filename.replace('pickle','')} successfully loaded!")
@@ -463,23 +475,29 @@ def on_button_click_Train_Model(b):
         summary_text = buffer.getvalue()
         print_message(summary_text)
 
-        # Avviare il training del modello con la barra di avanzamento tqdm
+        # Run Training        
         print_message("Training...")    
 
-        history = History()  # Crea un oggetto History per registrare la storia dell'addestramento
+        history = History()  # # make an History object for recording the training history
 
+        # Handle the progress bar
+        
+        progress_bar.layout.visibility = 'visible'
+        progress_bar.description = 'Training...'
+        progress_bar.style={'bar_color': 'orange'}
+        progress_bar.value = 0
+        progress_bar.max = epochs_widget.value
+        
+    
+        for _ in range(epochs_widget.value):
+            # Addestramento del modello per una singola epoca con il callback History
+            model.fit(X_train, Y_train, epochs=1, batch_size=batch_size_widget.value, validation_data=(X_test, Y_test), verbose=0, callbacks=[history])
 
-        with tqdm(total=epochs_widget.value) as pbar:  # Inizializza la barra di avanzamento
-            for _ in range(epochs_widget.value):
-                # Addestramento del modello per una singola epoca con il callback History
-                model.fit(X_train, Y_train, epochs=1, batch_size=batch_size_widget.value, validation_data=(X_test, Y_test), verbose=0, callbacks=[history])
-                pbar.update(1)  # Incrementa la barra di avanzamento di 1
-
-        # Close the pbar after the learning is finished, and clean all.
-        # Setta la posizione della barra di avanzamento al di fuori dello schermo
-        pbar.set_postfix_str("")
-        pbar.set_description_str("")
-        pbar.refresh()
+            #Update the progress bar
+            progress_bar.value += 1    
+            
+        progress_bar.description = 'Complete.'    
+        progress_bar.style={'bar_color': 'lightgreen'}
 
         # Valutazione del modello
         test_loss, test_acc = model.evaluate(X_test, Y_test)
@@ -577,8 +595,10 @@ train_model_button.on_click(on_button_click_Train_Model)
 model_file_chooser = FileChooser(title='Select a saved CNN model')
 model_file_chooser.use_dir_icons = True
 model_file_chooser.title = 'Upload a model'
-learning_plot_widget = widgets.Output()  # Display Learning Plot
-PredictionTestPlot_widget = widgets.Output()
+learning_plot_widget = widgets.Output(layout=Layout(width='800px', height='500px', overflow='hidden'))  # Display Learning Plot
+#learning_plot_widget = widgets.Output()  # Display Learning Plot
+PredictionTestPlot_widget = widgets.Output(layout=Layout(width='800px', height='500px', overflow='hidden'))
+#PredictionTestPlot_widget = widgets.Output()
 # Create a button for start the uploading action
 load_model_button = widgets.Button(description="Load the model", layout={'width': '200px'}, 
                                    button_style='info', style={'button_color': '#2a98db'})
@@ -595,6 +615,15 @@ def on_button_click_Load_Model(b):
         model = loadModel(directory_model_path)  
         print_message("\n")        
         print_message(f"Model: {directory_model_path} successfully loaded!")
+
+        # Print Model Summary
+        print_message("Model Summary:")
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            model.summary()
+        summary_text = buffer.getvalue()
+        print_message(summary_text)
+        
 
         # Here, testCNN slider max assumes the value of the X length
         testCNN_slider.max=X.shape[0]-1
@@ -739,9 +768,10 @@ load_model_button.on_click(on_button_click_Load_Model)
 
 # Widgets
 X = np.array([[0],[0],[0]])
-testCNN_output = widgets.Output()
+testCNN_output = widgets.Output(layout=Layout(width='500px', height='500px', overflow='hidden'))
+#testCNN_output = widgets.Output()
 testCNN_slider = widgets.IntSlider(value=0, min=0, max=len(X)-1, description='Image ID:', continuous_update=True)
-testCNN_button = widgets.Button(description='Test',layout={'width': '200px'}, 
+testCNN_button = widgets.Button(description='OK',layout={'width': '50px'}, 
                                    button_style='info', style={'button_color': '#2a98db'} )
 
 
@@ -842,9 +872,10 @@ testCNN_button.on_click(update_testCNN_output)
 # Widgets
 map_options = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
 feature_mapping = widgets.Checkbox(description='Feature Mapping') 
-feature_mapping_plot_output = widgets.Output()  # Display Feature Maps
+feature_mapping_plot_output = widgets.Output(layout=Layout(width='500px', height='500px', overflow='hidden'))  # Display Feature Maps
+#feature_mapping_plot_output = widgets.Output()  # Display Feature Maps
 feature_mapping_plot_Dropdown = widgets.Dropdown(options=map_options, value='0', description='map')
-feature_mapping_plot_button = widgets.Button(description='Display Feature Map',layout={'width': '200px'}, 
+feature_mapping_plot_button = widgets.Button(description='Map',layout={'width': '100px'}, 
                                    button_style='info', style={'button_color': '#2a98db'} )
 
 # Function for updating the Feature Mapping function output
@@ -861,9 +892,9 @@ feature_mapping_plot_button.on_click(update_featureMapping_output)
 
 # 5 ABOUT TAB
 
-name = 'MEDIGUI-ConvNet version 0.4.0' 
+name = 'MEDIGUI-ConvNet version 0.4.1' 
 description = 'Medical Imaging Convolutional Neural Network with Graphic User Interface'
-author = 'Luca Zammataro, Lunan Foldomics LLC, 2024'
+author = 'Luca Zammataro, Lunan Foldomics LLC, Copyright (c) 2024 - www.lunanfoldomicsllc.com'
 license = 'GNU General Public License v3.0'
 
 
@@ -906,6 +937,13 @@ table_html = f"""
 # Widgets
 
 # Create the widget FileChooser Selecting the Logo
+logo_file_path = os.getcwd()+"/MEDIGUI_ConvNet_Logo_app.png"  
+with open(logo_file_path, "rb") as file:
+    logo_data = file.read()
+logo_widget_app = widgets.Image(value=logo_data, format='png', layout={'width': '200px', 'height': '200px'})
+
+
+# Create the widget FileChooser Selecting the Logo
 logo_file_path = os.getcwd()+"/MEDIGUI_ConvNet_Logo.small.png"  # Imposta il percorso del file del logo
 with open(logo_file_path, "rb") as file:
     logo_data = file.read()
@@ -933,25 +971,30 @@ feature_mapping.layout.visibility = 'hidden'
 feature_mapping_plot_Dropdown.layout.visibility = 'hidden'
 feature_mapping_plot_button.layout.visibility = 'hidden'
 
+# Create the progress bar
+progress_bar = widgets.IntProgress(value=0,min=0,max=100,description='Loading...',style={'bar_color': 'lightblue'})
+progress_bar.layout.visibility = 'hidden'
 
 # The model filechooser and button are initially disabled (does not work)
 #model_file_chooser.layout.visibility = 'hidden'
 #load_model_button.layout.visibility = 'hidden'   
 
 
-tab_contents = ['Load Dataset','Model Training','Load Model','Model Testing','Learning Plot','About']
+tab_contents = ['Dataset Loading','Model Training','Model Loading','Model Testing','Learning Plot','About']
 
-children = [widgets.VBox([widgets.HBox([dataset_file_chooser, load_dataset_button]), separator, log_output_text]), 
-            widgets.VBox([training_controls_box, separator, log_output_text]),
-            widgets.VBox([widgets.HBox([model_file_chooser, load_model_button]), separator, log_output_text]),
+children = [widgets.VBox([widgets.HBox([dataset_file_chooser, load_dataset_button]), separator, log_output_text, separator, progress_bar]), 
+            widgets.VBox([training_controls_box, separator, log_output_text, separator, progress_bar]),
+            widgets.VBox([widgets.HBox([model_file_chooser, load_model_button]), separator, log_output_text, separator, progress_bar]),
+            
             widgets.VBox([widgets.HBox(
-                [widgets.VBox([widgets.HBox([testCNN_slider, testCNN_button]), separator, testCNN_output]), 
-                 widgets.VBox([widgets.HBox([feature_mapping, feature_mapping_plot_Dropdown, 
+                [widgets.VBox([widgets.HBox([testCNN_slider, testCNN_button]), separator, testCNN_output,feature_mapping]), 
+                 widgets.VBox([widgets.HBox([feature_mapping_plot_Dropdown, 
                                              feature_mapping_plot_button]),
-                               separator, feature_mapping_plot_output])]), separator, PredictionTestPlot_widget, log_output_text]), 
-            widgets.VBox([learning_plot_widget, separator, log_output_text]),
-            widgets.VBox([about_table_widget, separator, log_output_text])            
+                               separator, feature_mapping_plot_output])]), separator, PredictionTestPlot_widget, separator, log_output_text,separator, progress_bar]), 
+            widgets.VBox([learning_plot_widget, separator, log_output_text, separator, progress_bar]),
+            widgets.VBox([about_table_widget, separator, log_output_text, separator, progress_bar])            
            ]
+
 
 
 tab = widgets.Tab()
@@ -959,5 +1002,5 @@ tab.children = children
 for i in range(len(tab_contents)):
     tab.set_title(i, tab_contents[i])
 
-display(tab)
+display(logo_widget_app, tab)
 

@@ -125,7 +125,6 @@ contact: luca.zammataro@gmail.com
 Please cite: 
 
 MEDIGUI-ConvNet–Interactive Architecture Combining the Power of Convolutional Neural Networks and Medical Imaging.
-
 L Zammataro, S Rovetta, D Greco - INI-DH 2024: Workshop on Innovative Interfaces in Digital Healthcare, in conjunction with International Conference on Advanced Visual Interfaces, 2024
 
 Enjoy MEDIGUI-ConvNet!
